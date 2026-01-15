@@ -54,7 +54,7 @@ export function useA2ATask(agentUrl: string | null) {
   const { addActiveTask, updateTaskStatus, removeActiveTask } = useA2AStore()
 
   // Poll for task status
-  const { data: taskData, mutate } = useSWR<A2ATask>(
+  const { data: taskData, mutate } = useSWR<A2ATask | null>(
     agentUrl && taskId ? ["a2a-task", agentUrl, taskId] : null,
     async () => {
       if (!agentUrl || !taskId) return null
@@ -64,8 +64,9 @@ export function useA2ATask(agentUrl: string | null) {
     },
     {
       refreshInterval: (data) => {
+        if (!data) return 1000
         const finalStates: A2ATaskStatus["state"][] = ["completed", "failed", "canceled"]
-        if (data && finalStates.includes(data.status.state)) {
+        if (finalStates.includes(data.status.state)) {
           return 0 // Stop polling
         }
         return 1000 // Poll every second

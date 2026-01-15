@@ -5,13 +5,13 @@ export const monitorPerformance = (name: string, callback: () => void | Promise<
   
   return async () => {
     const startTime = performance.now()
-    const startMemory = performance.memory?.usedJSHeapSize
+    const startMemory = (performance as any).memory?.usedJSHeapSize
     
     try {
       await callback()
       
       const endTime = performance.now()
-      const endMemory = performance.memory?.usedJSHeapSize
+      const endMemory = (performance as any).memory?.usedJSHeapSize
       
       const duration = endTime - startTime
       const memoryUsed = endMemory && startMemory ? endMemory - startMemory : 0
@@ -19,8 +19,8 @@ export const monitorPerformance = (name: string, callback: () => void | Promise<
       console.log(`[PERF] ${name}: ${duration.toFixed(2)}ms`, memoryUsed ? `(${formatMemory(memoryUsed)})` : '')
       
       // Report to analytics if available
-      if (typeof window.analytics !== 'undefined') {
-        window.analytics.track('Performance', {
+      if (typeof (window as any).analytics !== 'undefined') {
+        (window as any).analytics.track('Performance', {
           name,
           duration,
           memoryUsed

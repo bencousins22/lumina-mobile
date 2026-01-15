@@ -65,10 +65,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
             <ToolCallDisplay toolCalls={message.toolCalls} />
           )}
 
-          {/* Attachments - Note: Message type in types/agent-zero doesn't have attachments yet, 
-              but they are in the local Message interface. I'll keep it for now but commented out 
-              if types don't match, or I should update the central type. */}
-          {/* @ts-ignore - attachments might be missing on core Message type */}
+          {/* Attachments */}
           {message.attachments && message.attachments.length > 0 && (
             <div className="mt-2">
               <FileAttachmentPreview attachments={message.attachments} readonly />

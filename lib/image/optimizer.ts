@@ -29,7 +29,7 @@ export const getImageSizes = (src: string) => {
   }
 }
 
-export const LazyImage = (props: {
+export const getImageProps = (props: {
   src: string
   alt: string
   width?: number
@@ -42,15 +42,13 @@ export const LazyImage = (props: {
   // Optimize the image URL
   const optimizedSrc = optimizeImageUrl(src, { width, height })
   
-  return (
-    <img
-      src={optimizedSrc}
-      alt={alt}
-      width={width}
-      height={height}
-      className={className}
-      loading={loading}
-      decoding="async"
-    />
-  )
+  return {
+    src: optimizedSrc,
+    alt,
+    width,
+    height,
+    className,
+    loading,
+    decoding: "async" as const
+  }
 }

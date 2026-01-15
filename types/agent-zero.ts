@@ -95,6 +95,7 @@ export interface Message {
   agentLevel?: number
   toolCalls?: ToolCall[]
   codeBlocks?: CodeBlock[]
+  attachments?: Attachment[]
   isStreaming?: boolean
   error?: string
 }
