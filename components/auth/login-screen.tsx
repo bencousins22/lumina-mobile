@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Eye, EyeOff, Terminal, Cpu, Network, Shield, Globe, Mail, Lock, AlertCircle, Check } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 export function LoginScreen() {
   const { login, signup, isLoading, error, clearError } = useAuth()
@@ -134,23 +135,41 @@ export function LoginScreen() {
                 <Label htmlFor="password" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground ml-1">
                   Password
                 </Label>
-                <div className="relative">
+                <div className="relative group">
                   <Input
                     id="password"
                     type={showPassword ? "text" : "password"}
-                    placeholder="Enter your password"
+                    placeholder={isSignUp ? "Create a strong password" : "Enter your password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     autoComplete={isSignUp ? "new-password" : "current-password"}
-                    className="pr-10 h-12 bg-input/50"
+                    className={cn(
+                      "pr-12 h-12 bg-input/50 border-border/50 transition-all duration-200",
+                      "focus:bg-background focus:border-primary/50 focus:shadow-lg",
+                      "group-hover:bg-input/70",
+                      passwordStrength.score >= 3 && "border-green-500/30 focus:border-green-500/50",
+                      passwordStrength.score <= 1 && password.length > 0 && "border-destructive/30 focus:border-destructive/50"
+                    )}
                     required
                   />
+                  <Lock className={cn(
+                    "absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors duration-200",
+                    "text-muted-foreground group-focus-within:text-primary",
+                    passwordStrength.score >= 3 && "text-green-500",
+                    passwordStrength.score <= 1 && password.length > 0 && "text-destructive"
+                  )} />
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="absolute right-1 top-1/2 -translate-y-1/2 h-10 w-10 text-muted-foreground hover:text-foreground"
+                    className={cn(
+                      "absolute right-1 top-1/2 -translate-y-1/2 h-10 w-10 rounded-lg",
+                      "text-muted-foreground hover:text-foreground hover:bg-muted/50",
+                      "transition-all duration-200",
+                      showPassword && "text-primary bg-primary/10 hover:bg-primary/20"
+                    )}
                     onClick={() => setShowPassword(!showPassword)}
+                    title={showPassword ? "Hide password" : "Show password"}
                   >
                     {showPassword ? (
                       <EyeOff className="h-4 w-4" />
@@ -158,34 +177,73 @@ export function LoginScreen() {
                       <Eye className="h-4 w-4" />
                     )}
                   </Button>
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 </div>
 
                 {/* Password strength indicator for signup */}
                 {isSignUp && password && (
-                  <div className="mt-2">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs text-muted-foreground">Password strength:</span>
-                      <span className={`text-xs font-medium ${passwordStrength.color}`}>
+                  <div className="mt-3 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-medium text-muted-foreground">Password strength:</span>
+                      <span className={cn(
+                        "text-xs font-semibold px-2 py-1 rounded-full",
+                        passwordStrength.color,
+                        passwordStrength.score >= 3 && "bg-green-500/10 text-green-600 border border-green-500/20",
+                        passwordStrength.score <= 1 && "bg-destructive/10 text-destructive border border-destructive/20",
+                        passwordStrength.score === 2 && "bg-yellow-500/10 text-yellow-600 border border-yellow-500/20"
+                      )}>
                         {passwordStrength.text}
                       </span>
                     </div>
-                    <div className="flex gap-1">
+                    <div className="flex gap-1.5">
                       {[...Array(5)].map((_, i) => (
                         <div
                           key={i}
-                          className={`h-1 flex-1 rounded-full ${
+                          className={cn(
+                            "h-1.5 flex-1 rounded-full transition-all duration-300",
                             i < passwordStrength.score
                               ? passwordStrength.score <= 2
-                                ? 'bg-destructive'
-                                : passwordStrength.score <= 3
-                                ? 'bg-yellow-500'
-                                : 'bg-green-500'
-                              : 'bg-muted'
-                          }`}
+                                ? passwordStrength.score === 1
+                                  ? "bg-destructive"
+                                  : "bg-yellow-500"
+                                : "bg-green-500"
+                              : "bg-muted"
+                          )}
                         />
                       ))}
                     </div>
+                    
+                    {/* Password requirements checklist */}
+                    <div className="mt-3 space-y-1">
+                      {[
+                        { text: "At least 8 characters", met: password.length >= 8 },
+                        { text: "Contains uppercase & lowercase", met: /[a-z]/.test(password) && /[A-Z]/.test(password) },
+                        { text: "Contains a number", met: /\d/.test(password) },
+                        { text: "Contains special character", met: /[^a-zA-Z\d]/.test(password) },
+                      ].map((req, i) => (
+                        <div key={i} className="flex items-center gap-2 text-xs">
+                          <div className={cn(
+                            "w-3 h-3 rounded-full flex items-center justify-center",
+                            req.met ? "bg-green-500" : "bg-muted"
+                          )}>
+                            {req.met && <Check className="h-2 w-2 text-white" />}
+                          </div>
+                          <span className={cn(
+                            req.met ? "text-green-600" : "text-muted-foreground"
+                          )}>
+                            {req.text}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Password hint for login */}
+                {!isSignUp && (
+                  <div className="mt-2">
+                    <p className="text-xs text-muted-foreground">
+                      Use your account password to sign in
+                    </p>
                   </div>
                 )}
               </div>
