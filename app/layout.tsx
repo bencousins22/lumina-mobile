@@ -20,7 +20,24 @@ export const metadata: Metadata = {
       { url: "/icon-dark-32x32.png", media: "(prefers-color-scheme: dark)" },
       { url: "/icon.svg", type: "image/svg+xml" },
     ],
-    apple: "/apple-icon.png",
+    apple: [
+      { url: "/apple-icon.png", sizes: "180x180" }
+    ]
+  },
+  openGraph: {
+    title: "Lumina | Autonomous AI Framework",
+    description: "Your open-source AI companion. Limitless, transparent, and entirely yours.",
+    type: "website",
+    url: "https://lumina-mobile.vercel.app",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Lumina | Autonomous AI Framework",
+    description: "Your open-source AI companion. Limitless, transparent, and entirely yours.",
+  },
+  robots: {
+    index: true,
+    follow: true,
   },
 }
 
