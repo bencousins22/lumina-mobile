@@ -1,0 +1,67 @@
+path,batch,target_component,notes
+webui/components/chat/,1,Chat bundle,Core chat UI (input, messages, attachments)
+webui/components/chat/attachments/attachmentsStore.js,1,Attachments store,Wire to `lib/a2a-client.ts`
+webui/components/chat/attachments/dragDropOverlay.html,1,Attachments UI,Drag/drop overlay for uploads
+webui/components/chat/attachments/inputPreview.html,1,Attachment preview,Thumbnail/preflight UI
+webui/components/chat/input/chat-bar.html,1,Chat input,Main chat bar markup
+webui/components/chat/input/chat-bar-input.html,1,Chat input field,Text input + composer
+webui/components/chat/input/input-store.js,1,Chat input store,Local state for composer
+webui/components/chat/input/progress.html,1,Upload progress,Progress UI for uploads
+webui/components/chat/speech/speech-store.js,1,Speech store,Manage speech-to-text state
+webui/components/messages/,1,Messages bundle,Message rendering & actions
+webui/components/messages/action-buttons/simple-action-buttons.js,1,Message actions,Reply/save/share actions
+webui/components/messages/resize/message-resize-store.js,1,Message resize,Resizable message panels
+webui/components/modals/context/context-store.js,3,Context modal,Context menu/modal store
+webui/components/modals/context/context.html,3,Context modal UI,Context modal markup
+webui/components/modals/file-browser/file-browser-store.js,3,File browser store,File listing + selection
+webui/components/modals/file-browser/file-browser.html,3,File browser UI,File selection UI
+webui/components/modals/full-screen-input/full-screen-store.js,3,Full-screen input,Long-form input modal
+webui/components/modals/full-screen-input/full-screen-input.html,3,Full-screen input UI,Markup for full-screen editor
+webui/components/modals/history/history-store.js,3,History store,Conversation history management
+webui/components/modals/history/history.html,3,History UI,History listing UI
+webui/components/modals/image-viewer/image-viewer-store.js,3,Image viewer store,Image modal state
+webui/components/modals/image-viewer/image-viewer.html,3,Image viewer UI,Image preview modal
+webui/components/notifications/notification-store.js,5,Notification store,Notification lifecycle
+webui/components/notifications/notification-icons.html,5,Notification icons,SVG/icon markup
+webui/components/notifications/notification-modal.html,5,Notification modal,Notification center UI
+webui/components/notifications/notification-toast-stack.html,5,Toast stack,Toaster markup
+webui/components/projects/projects-store.js,4,Projects store,Project CRUD state
+webui/components/projects/project-list.html,4,Projects list,List UI
+webui/components/projects/project-create.html,4,Project create,Create project form
+webui/components/projects/project-edit.html,4,Project edit,Edit project form
+webui/components/settings/backup/backup-store.js,4,Backup store,Backup/restore state
+webui/components/settings/backup/backup.html,4,Backup UI,Backup page UI
+webui/components/settings/backup/restore.html,4,Restore UI,Restore page UI
+webui/components/settings/memory/memory-dashboard-store.js,4,Memory dashboard store,Memory management
+webui/components/settings/memory/memory-dashboard.html,4,Memory dashboard UI,Memory dashboard markup
+webui/components/settings/memory/memory-detail-modal.html,4,Memory detail modal,Memory item detail
+webui/components/settings/speech/microphone-setting-store.js,4,Mic settings store,Speech settings state
+webui/components/settings/speech/microphone.html,4,Mic settings UI,Microphone preference UI
+webui/components/settings/tunnel/tunnel-store.js,4,Tunnel store,Tunnel config state
+webui/components/settings/tunnel/tunnel-section.html,4,Tunnel UI,Tunnel markup
+webui/components/sidebar/left-sidebar.html,2,Sidebar left,Primary sidebar markup
+webui/components/sidebar/sidebar-store.js,2,Sidebar store,Sidebar state + navigation
+webui/components/sidebar/chats/chats-store.js,2,Chats store,Chat list state
+webui/components/sidebar/chats/chats-list.html,2,Chats list UI,Chat list markup
+webui/components/sidebar/bottom/preferences/preferences-store.js,2,Preferences store,User preferences state
+webui/components/sidebar/bottom/preferences/preferences-panel.html,2,Preferences UI,Preferences markup
+webui/components/welcome/welcome-screen.html,5,Welcome UI,Initial welcome screen
+webui/components/welcome/welcome-store.js,5,Welcome store,Welcome state
+webui/css/buttons.css,all,Legacy CSS,Buttons styles (scope carefully)
+webui/css/messages.css,all,Legacy CSS,Message styles (likely to conflict)
+webui/css/modals.css,all,Legacy CSS,Modal styles
+webui/css/notification.css,all,Legacy CSS,Notification styles
+webui/css/settings.css,all,Legacy CSS,Settings styles
+webui/css/speech.css,all,Legacy CSS,Speech styles
+webui/css/toast.css,all,Legacy CSS,Toast styles
+webui/js/AlpineStore.js,all,Legacy JS,Alpine stores and global functions
+webui/js/api.js,all,Legacy JS,HTTP helper wrappers (inspect for overlap)
+webui/js/components.js,all,Legacy JS,Component registration logic
+webui/js/initFw.js,all,Legacy JS,Init framework code (bootstrapping)
+webui/js/messages.js,1,Legacy messages JS,Message behavior & events
+webui/js/modals.js,3,Legacy modals JS,Modal management logic
+webui/js/speech_browser.js,1,Legacy speech,Speech browser glue
+webui/js/transformers@3.0.2.js,all,Vendor JS,Large vendor script; sandbox if possible
+webui/index.html,1,Legacy index,Legacy app entry (useful for iframe mount)
+webui/index.js,1,Legacy entry JS,Legacy boot script
+webui/public/,all,Public assets,SVGs and images; copy to static serving path
