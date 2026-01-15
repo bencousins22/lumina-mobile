@@ -93,6 +93,7 @@ export function LoginScreen() {
                     placeholder="your@email.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    autoComplete="email"
                     className="pl-10 h-12 bg-input/50"
                     required
                   />
@@ -111,6 +112,7 @@ export function LoginScreen() {
                     placeholder="Enter your password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    autoComplete="current-password"
                     className="pr-10 h-12 bg-input/50"
                     required
                   />
