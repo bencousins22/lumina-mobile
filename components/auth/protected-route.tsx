@@ -1,6 +1,7 @@
+
 "use client"
 
-import { useAuth } from "@/hooks/use-auth"
+import { useAuthContext } from "@/components/providers"
 import { LoginScreen } from "./login-screen"
 
 interface ProtectedRouteProps {
@@ -8,10 +9,10 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { isAuthenticated, isLoading } = useAuth()
+  const { isAuthenticated, loading } = useAuthContext()
 
   // Show loading spinner while checking authentication
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="min-h-dvh flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">

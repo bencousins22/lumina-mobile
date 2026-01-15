@@ -1,7 +1,29 @@
+
 "use client"
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
 import { Toaster } from "@/components/ui/sonner"
+import { useAuth, UserProfile } from "@/hooks/use-auth"
+
+// ============ Auth Context ============
+interface AuthContextType {
+  user: UserProfile | null
+  loading: boolean
+  isAuthenticated: boolean
+  signUp: (email: string, password: string) => Promise<void>
+  signIn: (email: string, password: string) => Promise<void>
+  logOut: () => Promise<void>
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined)
+
+export function useAuthContext() {
+  const context = useContext(AuthContext)
+  if (!context) {
+    throw new Error("useAuthContext must be used within an AuthProvider")
+  }
+  return context
+}
 
 // ============ Settings Context ============
 
@@ -133,8 +155,6 @@ interface UIContextType {
   setIsSidebarOpen: (open: boolean) => void
   activePanel: "chat" | "agents" | "memory" | "settings" | "projects" | "marketplace" | "agent-zero"
   setActivePanel: (panel: "chat" | "agents" | "memory" | "settings" | "projects" | "marketplace" | "agent-zero") => void
-  isAuthenticated: boolean
-  setIsAuthenticated: (auth: boolean) => void
   showAgentHierarchy: boolean
   setShowAgentHierarchy: (show: boolean) => void
   compactMode: boolean
@@ -152,6 +172,17 @@ export function useUIContext() {
 }
 
 // ============ Providers Component ============
+
+function AuthProvider({ children }: { children: ReactNode }) {
+    const { user, loading, signUp, signIn, logOut } = useAuth();
+    const isAuthenticated = !!user;
+
+    return (
+        <AuthContext.Provider value={{ user, loading, isAuthenticated, signUp, signIn, logOut }}>
+            {children}
+        </AuthContext.Provider>
+    );
+}
 
 export function Providers({ children }: { children: ReactNode }) {
   // Settings state with localStorage persistence
@@ -275,7 +306,6 @@ export function Providers({ children }: { children: ReactNode }) {
   // UI state
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [activePanel, setActivePanel] = useState<"chat" | "agents" | "memory" | "settings" | "projects" | "marketplace" | "agent-zero">("chat")
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [showAgentHierarchy, setShowAgentHierarchy] = useState(false)
   const [compactMode, setCompactMode] = useState(false)
 
@@ -285,67 +315,67 @@ export function Providers({ children }: { children: ReactNode }) {
   }, [activePanel])
 
   return (
-    <SettingsContext.Provider
-      value={{
-        baseUrl,
-        apiKey,
-        setBaseUrl,
-        setApiKey,
-        isConnected,
-        setIsConnected,
-        theme,
-        setTheme,
-      }}
-    >
-      <UIContext.Provider
+    <AuthProvider>
+      <SettingsContext.Provider
         value={{
-          isSidebarOpen,
-          setIsSidebarOpen,
-          activePanel,
-          setActivePanel,
-          isAuthenticated,
-          setIsAuthenticated,
-          showAgentHierarchy,
-          setShowAgentHierarchy,
-          compactMode,
-          setCompactMode,
+          baseUrl,
+          apiKey,
+          setBaseUrl,
+          setApiKey,
+          isConnected,
+          setIsConnected,
+          theme,
+          setTheme,
         }}
       >
-        <AgentContext.Provider
+        <UIContext.Provider
           value={{
-            agents,
-            addAgent,
-            updateAgent,
-            currentAgent,
-            setCurrentAgent,
-            activeAgentId,
-            setActiveAgentId,
+            isSidebarOpen,
+            setIsSidebarOpen,
+            activePanel,
+            setActivePanel,
+            showAgentHierarchy,
+            setShowAgentHierarchy,
+            compactMode,
+            setCompactMode,
           }}
         >
-          <ChatContext.Provider
+          <AgentContext.Provider
             value={{
-              chats,
-              currentChat,
-              setCurrentChat,
-              contextId,
-              setContextId,
-              messages,
-              setMessages,
-              addMessage,
-              updateMessage,
-              clearMessages,
-              createChat,
-              isStreaming,
-              setIsStreaming,
-              error,
-              setError,
+              agents,
+              addAgent,
+              updateAgent,
+              currentAgent,
+              setCurrentAgent,
+              activeAgentId,
+              setActiveAgentId,
             }}
           >
-            {children}
-            <Toaster position="top-center" richColors />
-          </ChatContext.Provider>
-        </AgentContext.Provider>
-      </UIContext.Provider>
-    </SettingsContext.Provider>
+            <ChatContext.Provider
+              value={{
+                chats,
+                currentChat,
+                setCurrentChat,
+                contextId,
+                setContextId,
+                messages,
+                setMessages,
+                addMessage,
+                updateMessage,
+                clearMessages,
+                createChat,
+                isStreaming,
+                setIsStreaming,
+                error,
+                setError,
+              }}
+            >
+              {children}
+              <Toaster position="top-center" richColors />
+            </ChatContext.Provider>
+          </AgentContext.Provider>
+        </UIContext.Provider>
+      </SettingsContext.Provider>
+    </AuthProvider>
   )
 }

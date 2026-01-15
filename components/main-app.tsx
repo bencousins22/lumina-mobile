@@ -1,10 +1,9 @@
 "use client"
 
-import { lazy, Suspense } from "react"
+import { lazy, Suspense, useMemo } from "react"
 import { useUIContext } from "@/components/providers"
 import { MobileNavigation } from "@/components/navigation/mobile-navigation"
 import { MobileSidebar } from "@/components/navigation/mobile-sidebar"
-import { MobileModeToggle } from "@/components/ui/mobile-mode-toggle"
 import { 
   ChatSkeleton, 
   AgentsSkeleton, 
@@ -22,78 +21,40 @@ const ProjectsPanel = lazy(() => import("@/components/projects/projects-panel"))
 const MarketplacePanel = lazy(() => import("@/components/marketplace/marketplace-panel"))
 const AgentZeroPanel = lazy(() => import("@/components/agent-zero/agent-zero-deployer"))
 
+// Panel mapping for declarative rendering
+const panelMap = {
+  chat: { component: ChatPanel, fallback: ChatSkeleton },
+  agents: { component: AgentsPanel, fallback: AgentsSkeleton },
+  memory: { component: MemoryPanel, fallback: MemorySkeleton },
+  settings: { component: SettingsPanel, fallback: SettingsSkeleton },
+  projects: { component: ProjectsPanel, fallback: ProjectsSkeleton },
+  marketplace: { component: MarketplacePanel, fallback: AgentsSkeleton }, // Note: Using AgentsSkeleton
+  "agent-zero": { component: AgentZeroPanel, fallback: SettingsSkeleton }, // Note: Using SettingsSkeleton
+}
+
 export function MainApp() {
   const { activePanel, isSidebarOpen, setIsSidebarOpen } = useUIContext()
 
-  // Render the appropriate panel with the matching skeleton
-  const renderPanel = () => {
-    switch (activePanel) {
-      case "chat":
-        return (
-          <Suspense fallback={<ChatSkeleton />}>
-            <ChatPanel />
-          </Suspense>
-        )
-      case "agents":
-        return (
-          <Suspense fallback={<AgentsSkeleton />}>
-            <AgentsPanel />
-          </Suspense>
-        )
-      case "memory":
-        return (
-          <Suspense fallback={<MemorySkeleton />}>
-            <MemoryPanel />
-          </Suspense>
-        )
-      case "settings":
-        return (
-          <Suspense fallback={<SettingsSkeleton />}>
-            <SettingsPanel />
-          </Suspense>
-        )
-      case "projects":
-        return (
-          <Suspense fallback={<ProjectsSkeleton />}>
-            <ProjectsPanel />
-          </Suspense>
-        )
-      case "marketplace":
-        return (
-          <Suspense fallback={<AgentsSkeleton />}>
-             <MarketplacePanel />
-          </Suspense>
-        )
-      case "agent-zero":
-        return (
-          <Suspense fallback={<SettingsSkeleton />}>
-            <AgentZeroPanel />
-          </Suspense>
-        )
-      default:
-        return (
-          <Suspense fallback={<ChatSkeleton />}>
-            <ChatPanel />
-          </Suspense>
-        )
-    }
-  }
+  const ActivePanel = useMemo(() => {
+    const { component: PanelComponent, fallback: FallbackComponent } = 
+      panelMap[activePanel] || panelMap.chat
+      
+    return (
+      <Suspense fallback={<FallbackComponent />}>
+        <PanelComponent />
+      </Suspense>
+    )
+  }, [activePanel])
 
   return (
     <div className="h-dvh flex flex-col bg-background overflow-hidden">
-      {/* Sidebar overlay for mobile */}
       <MobileSidebar open={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
-      {/* Main content area with lazy loaded panels */}
-      <main className="flex-1 overflow-hidden">
-        {renderPanel()}
+      <main className="flex-1 overflow-y-auto">
+        {ActivePanel}
       </main>
 
-      {/* Bottom navigation */}
       <MobileNavigation />
-      
-      {/* Mobile Mode Toggle */}
-      <MobileModeToggle />
     </div>
   )
 }

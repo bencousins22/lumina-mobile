@@ -1,193 +1,50 @@
-/**
- * Authentication Hook
- * 
- * Provides authentication state and methods for the application.
- * Handles login, logout, token refresh, and user state management.
- */
 
-import { useState, useEffect, useCallback } from 'react'
-import type { User } from '@/lib/auth'
+import { useState, useEffect } from 'react';
+import { onAuthChange, UserProfile, signUp as fbSignUp, signIn as fbSignIn, logOut as fbLogOut } from '../lib/auth';
 
-export interface UseAuthReturn {
-  user: User | null
-  isLoading: boolean
-  isAuthenticated: boolean
-  error: string | null
-  login: (email: string, password: string) => Promise<void>
-  signup: (email: string, password: string, name: string) => Promise<void>
-  logout: () => Promise<void>
-  refreshAuth: () => Promise<void>
-  clearError: () => void
-}
+export type { UserProfile };
 
-export function useAuth(): UseAuthReturn {
-  const [user, setUser] = useState<User | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+export function useAuth() {
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  /**
-   * Clear any error messages
-   */
-  const clearError = useCallback(() => {
-    setError(null)
-  }, [])
-
-  /**
-   * Refresh authentication state from the server
-   */
-  const refreshAuth = useCallback(async () => {
-    try {
-      setIsLoading(true)
-      const response = await fetch('/api/auth/me', {
-        credentials: 'include', // Include cookies
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        setUser(data.user)
-      } else {
-        setUser(null)
-      }
-    } catch (err) {
-      console.error('Failed to refresh auth:', err)
-      setUser(null)
-    } finally {
-      setIsLoading(false)
-    }
-  }, []) // Empty dependency array since it doesn't depend on any external values
-
-  /**
-   * Log in with email and password
-   */
-  const login = useCallback(async (email: string, password: string) => {
-    try {
-      setIsLoading(true)
-      setError(null)
-
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include', // Include cookies
-        body: JSON.stringify({ email, password }),
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Login failed')
-      }
-
-      setUser(data.user)
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred'
-      setError(errorMessage)
-      throw err
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
-
-  /**
-   * Sign up with email, password, and name
-   */
-  const signup = useCallback(async (email: string, password: string, name: string) => {
-    try {
-      setIsLoading(true)
-      setError(null)
-
-      const response = await fetch('/api/auth/signup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include', // Include cookies
-        body: JSON.stringify({ email, password, name }),
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Signup failed')
-      }
-
-      setUser(data.user)
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred'
-      setError(errorMessage)
-      throw err
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
-
-  /**
-   * Log out the current user
-   */
-  const logout = useCallback(async () => {
-    try {
-      setIsLoading(true)
-      
-      await fetch('/api/auth/logout', {
-        method: 'POST',
-        credentials: 'include',
-      })
-
-      setUser(null)
-    } catch (err) {
-      console.error('Logout failed:', err)
-      // Still clear user state even if request fails
-      setUser(null)
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
-
-  /**
-   * Auto-refresh authentication on mount
-   */
   useEffect(() => {
-    refreshAuth()
-  }, [refreshAuth])
+    const unsubscribe = onAuthChange((user) => {
+      setUser(user);
+      setLoading(false);
+    });
 
-  /**
-   * Set up automatic token refresh
-   * Refresh access token 1 minute before it expires (14 minutes after login)
-   */
-  useEffect(() => {
-    if (!user) return
+    return () => unsubscribe();
+  }, []);
 
-    const refreshInterval = setInterval(async () => {
-      try {
-        const response = await fetch('/api/auth/refresh', {
-          method: 'POST',
-          credentials: 'include',
-        })
+  const signUp = async (email: string, password: string) => {
+    try {
+      const userProfile = await fbSignUp(email, password);
+      setUser(userProfile);
+    } catch (error) {
+      console.error("Error signing up:", error);
+      throw error;
+    }
+  };
 
-        if (!response.ok) {
-          // Refresh failed, user needs to log in again
-          console.error('Token refresh failed')
-          setUser(null)
-        }
-      } catch (err) {
-        console.error('Token refresh error:', err)
-        setUser(null)
-      }
-    }, 14 * 60 * 1000) // 14 minutes
+  const signIn = async (email: string, password: string) => {
+    try {
+      const userProfile = await fbSignIn(email, password);
+      setUser(userProfile);
+    } catch (error) {
+      console.error("Error signing in:", error);
+      throw error;
+    }
+  };
 
-    return () => clearInterval(refreshInterval)
-  }, [user])
+  const logOut = async () => {
+    try {
+      await fbLogOut();
+      setUser(null);
+    } catch (error) {
+      console.error("Error logging out:", error);
+    }
+  };
 
-  return {
-    user,
-    isLoading,
-    isAuthenticated: !!user,
-    error,
-    login,
-    signup,
-    logout,
-    refreshAuth,
-    clearError,
-  }
+  return { user, loading, signUp, signIn, logOut };
 }
