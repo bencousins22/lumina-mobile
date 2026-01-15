@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Eye, EyeOff, Terminal, Cpu, Network, Shield, Globe, Mail, Lock, AlertCircle, Check } from "lucide-react"
+import { Eye, EyeOff, Terminal, Cpu, Network, Shield, Globe, Mail, AlertCircle, Check } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 export function LoginScreen() {
@@ -152,12 +152,6 @@ export function LoginScreen() {
                     )}
                     required
                   />
-                  <Lock className={cn(
-                    "absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors duration-200",
-                    "text-muted-foreground group-focus-within:text-primary",
-                    passwordStrength.score >= 3 && "text-green-500",
-                    passwordStrength.score <= 1 && password.length > 0 && "text-destructive"
-                  )} />
                   <Button
                     type="button"
                     variant="ghost"
