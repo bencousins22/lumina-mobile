@@ -1,27 +1,14 @@
 "use client"
 
-import { useEffect } from "react"
-import { useRouter } from "next/navigation"
 import { useAuth } from "@/hooks/use-auth"
 import { LoginScreen } from "./login-screen"
 
 interface ProtectedRouteProps {
   children: React.ReactNode
-  redirectTo?: string
 }
 
-export function ProtectedRoute({ 
-  children, 
-  redirectTo = "/auth/login" 
-}: ProtectedRouteProps) {
+export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { isAuthenticated, isLoading } = useAuth()
-  const router = useRouter()
-
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      router.push(redirectTo)
-    }
-  }, [isAuthenticated, isLoading, router, redirectTo])
 
   // Show loading spinner while checking authentication
   if (isLoading) {

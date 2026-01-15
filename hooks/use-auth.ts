@@ -53,7 +53,7 @@ export function useAuth(): UseAuthReturn {
     } finally {
       setIsLoading(false)
     }
-  }, [])
+  }, []) // Empty dependency array since it doesn't depend on any external values
 
   /**
    * Log in with email and password
