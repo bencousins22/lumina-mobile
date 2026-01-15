@@ -1,0 +1,140 @@
+/* Mobile Mode Styles */
+.mobile-mode-transition {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: center center;
+}
+
+.mobile-mode-active {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  box-shadow: 0 0 50px rgba(0, 0, 0, 0.3);
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.mobile-mode-active body {
+  overflow: hidden;
+}
+
+/* Fullscreen styles */
+:fullscreen {
+  background: #000;
+}
+
+:fullscreen .mobile-mode-active {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Mobile viewport dimensions */
+.mobile-viewport {
+  width: 375px;
+  max-width: 375px;
+  height: 812px;
+  max-height: 812px;
+  background: #fff;
+  border-radius: 20px;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Mobile mode animations */
+@keyframes snapIn {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes snapOut {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(0.95);
+  }
+  100% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+}
+
+.snap-in {
+  animation: snapIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.snap-out {
+  animation: snapOut 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Mobile mode indicator */
+.mobile-mode-indicator {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  z-index: 10000;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .mobile-mode-active {
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
+    top: 0;
+    left: 0;
+    transform: none;
+  }
+  
+  :fullscreen .mobile-mode-active {
+    top: 0;
+    left: 0;
+    transform: none;
+  }
+}
+
+/* Touch device optimizations */
+@media (pointer: coarse) {
+  .mobile-mode-toggle {
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* High DPI displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .mobile-mode-active {
+    border: 0.5px solid rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .mobile-mode-transition,
+  .snap-in,
+  .snap-out {
+    animation-duration: 0.01ms;
+    transition-duration: 0.01ms;
+  }
+}

@@ -4,6 +4,7 @@ import { lazy, Suspense } from "react"
 import { useUIContext } from "@/components/providers"
 import { MobileNavigation } from "@/components/navigation/mobile-navigation"
 import { MobileSidebar } from "@/components/navigation/mobile-sidebar"
+import { MobileModeToggle } from "@/components/ui/mobile-mode-toggle"
 import { 
   ChatSkeleton, 
   AgentsSkeleton, 
@@ -90,6 +91,9 @@ export function MainApp() {
 
       {/* Bottom navigation */}
       <MobileNavigation />
+      
+      {/* Mobile Mode Toggle */}
+      <MobileModeToggle />
     </div>
   )
 }
