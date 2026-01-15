@@ -14,6 +14,7 @@ export interface UseAuthReturn {
   isAuthenticated: boolean
   error: string | null
   login: (email: string, password: string) => Promise<void>
+  signup: (email: string, password: string, name: string) => Promise<void>
   logout: () => Promise<void>
   refreshAuth: () => Promise<void>
   clearError: () => void
@@ -89,6 +90,39 @@ export function useAuth(): UseAuthReturn {
   }, [])
 
   /**
+   * Sign up with email, password, and name
+   */
+  const signup = useCallback(async (email: string, password: string, name: string) => {
+    try {
+      setIsLoading(true)
+      setError(null)
+
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include', // Include cookies
+        body: JSON.stringify({ email, password, name }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Signup failed')
+      }
+
+      setUser(data.user)
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred'
+      setError(errorMessage)
+      throw err
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
+
+  /**
    * Log out the current user
    */
   const logout = useCallback(async () => {
@@ -151,6 +185,7 @@ export function useAuth(): UseAuthReturn {
     isAuthenticated: !!user,
     error,
     login,
+    signup,
     logout,
     refreshAuth,
     clearError,

@@ -12,12 +12,14 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Eye, EyeOff, Terminal, Cpu, Network, Shield, Globe, Mail, Lock, AlertCircle, Check } from "lucide-react"
 
 export function LoginScreen() {
-  const { login, isLoading, error, clearError } = useAuth()
+  const { login, signup, isLoading, error, clearError } = useAuth()
   
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [name, setName] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [rememberMe, setRememberMe] = useState(false)
+  const [isSignUp, setIsSignUp] = useState(false)
 
   // Password strength indicator
   const getPasswordStrength = (password: string) => {
@@ -43,16 +45,20 @@ export function LoginScreen() {
 
   const passwordStrength = getPasswordStrength(password)
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault()
     clearError()
 
     try {
-      await login(email, password)
+      if (isSignUp) {
+        await signup(email, password, name)
+      } else {
+        await login(email, password)
+      }
       // No redirect needed - ProtectedRoute will automatically show MainApp after login
     } catch (err) {
       // Error is already handled by useAuth hook
-      console.error('Login failed:', err)
+      console.error(isSignUp ? 'Signup failed:' : 'Login failed:', err)
     }
   }
 
@@ -77,11 +83,34 @@ export function LoginScreen() {
         {/* Login card */}
         <Card className="w-full max-w-sm border-border/50 bg-card/80 backdrop-blur-sm">
           <CardHeader className="text-center pb-4">
-            <CardTitle className="text-xl">Welcome to Lumina</CardTitle>
-            <CardDescription>Sign in to access your AI framework</CardDescription>
+            <CardTitle className="text-xl">{isSignUp ? 'Create Account' : 'Welcome to Lumina'}</CardTitle>
+            <CardDescription>
+              {isSignUp ? 'Sign up to get started with your AI assistant' : 'Sign in to your account'}
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleLogin} className="space-y-4">
+            <form onSubmit={handleAuth} className="space-y-4">
+              {isSignUp && (
+                <div className="space-y-2">
+                  <Label htmlFor="name" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground ml-1">
+                    Name
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      id="name"
+                      type="text"
+                      placeholder="Your name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      autoComplete="name"
+                      className="pl-10 h-12 bg-input/50"
+                      required
+                    />
+                    <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  </div>
+                </div>
+              )}
+
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground ml-1">
                   Email
@@ -112,7 +141,7 @@ export function LoginScreen() {
                     placeholder="Enter your password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    autoComplete="current-password"
+                    autoComplete={isSignUp ? "new-password" : "current-password"}
                     className="pr-10 h-12 bg-input/50"
                     required
                   />
@@ -123,46 +152,56 @@ export function LoginScreen() {
                     className="absolute right-1 top-1/2 -translate-y-1/2 h-10 w-10 text-muted-foreground hover:text-foreground"
                     onClick={() => setShowPassword(!showPassword)}
                   >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    <span className="sr-only">{showPassword ? "Hide" : "Show"} password</span>
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
                   </Button>
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 </div>
-                {password && (
-                  <div className="flex items-center gap-2 px-1">
-                    <div className="flex-1 flex gap-1">
-                      {[1, 2, 3, 4, 5].map((level) => (
+
+                {/* Password strength indicator for signup */}
+                {isSignUp && password && (
+                  <div className="mt-2">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs text-muted-foreground">Password strength:</span>
+                      <span className={`text-xs font-medium ${passwordStrength.color}`}>
+                        {passwordStrength.text}
+                      </span>
+                    </div>
+                    <div className="flex gap-1">
+                      {[...Array(5)].map((_, i) => (
                         <div
-                          key={level}
+                          key={i}
                           className={`h-1 flex-1 rounded-full ${
-                            level <= passwordStrength.score
+                            i < passwordStrength.score
                               ? passwordStrength.score <= 2
-                                ? "bg-destructive"
+                                ? 'bg-destructive'
                                 : passwordStrength.score <= 3
-                                ? "bg-yellow-500"
-                                : "bg-green-500"
-                              : "bg-muted"
+                                ? 'bg-yellow-500'
+                                : 'bg-green-500'
+                              : 'bg-muted'
                           }`}
                         />
                       ))}
                     </div>
-                    <span className={`text-xs ${passwordStrength.color}`}>
-                      {passwordStrength.text}
-                    </span>
                   </div>
                 )}
               </div>
 
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="remember"
-                  checked={rememberMe}
-                  onCheckedChange={(checked) => setRememberMe(checked as boolean)}
-                />
-                <Label htmlFor="remember" className="text-sm text-muted-foreground">
-                  Remember me for 30 days
-                </Label>
-              </div>
+              {!isSignUp && (
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="remember"
+                    checked={rememberMe}
+                    onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                  />
+                  <Label htmlFor="remember" className="text-sm text-muted-foreground">
+                    Remember me for 30 days
+                  </Label>
+                </div>
+              )}
 
               {error && (
                 <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
@@ -175,12 +214,26 @@ export function LoginScreen() {
                 {isLoading ? (
                   <span className="flex items-center gap-2">
                     <span className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-                    Signing In...
+                    {isSignUp ? 'Creating Account...' : 'Signing In...'}
                   </span>
                 ) : (
-                  "Sign In"
+                  isSignUp ? 'Create Account' : 'Sign In'
                 )}
               </Button>
+
+              <div className="text-center">
+                <Button
+                  type="button"
+                  variant="link"
+                  className="text-sm text-muted-foreground hover:text-foreground"
+                  onClick={() => {
+                    setIsSignUp(!isSignUp)
+                    clearError()
+                  }}
+                >
+                  {isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Sign up"}
+                </Button>
+              </div>
             </form>
           </CardContent>
         </Card>
