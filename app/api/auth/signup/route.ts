@@ -70,20 +70,31 @@ export async function POST(request: NextRequest) {
     }
 
     // Create user record in users table
-    const { data: userData, error: userError } = await supabase
-      .from('users')
-      .insert({
-        id: authData.user.id,
-        email: authData.user.email || email,
-        name: name,
-        role: 'user',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      })
-      .select()
-      .single()
+    let userData = null
+    let userError = null
+    
+    try {
+      const result = await supabase
+        .from('users')
+        .insert({
+          id: authData.user.id,
+          email: authData.user.email || email,
+          name: name,
+          role: 'user',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+        .select()
+        .single()
+      
+      userData = result.data
+      userError = result.error
+    } catch (error) {
+      console.error('User table insert error:', error)
+      userError = error
+    }
 
-    // Fallback if users table insert fails
+    // Use auth user data if table insert fails
     const user = userData || {
       id: authData.user.id,
       email: authData.user.email || email,
@@ -92,12 +103,25 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate JWT tokens for our app
-    const { accessToken, refreshToken } = await generateTokenPair({
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      role: user.role,
-    })
+    let accessToken = null
+    let refreshToken = null
+    
+    try {
+      const tokens = await generateTokenPair({
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+      })
+      accessToken = tokens.accessToken
+      refreshToken = tokens.refreshToken
+    } catch (tokenError) {
+      console.error('Token generation error:', tokenError)
+      return NextResponse.json(
+        { error: 'Failed to generate authentication tokens' },
+        { status: 500 }
+      )
+    }
 
     // Create response with user data
     const response = NextResponse.json({
@@ -128,6 +152,22 @@ export async function POST(request: NextRequest) {
     return response
   } catch (error) {
     console.error('Signup error:', error)
+    
+    // Handle different types of errors
+    if (error instanceof SyntaxError) {
+      return NextResponse.json(
+        { error: 'Invalid request format' },
+        { status: 400 }
+      )
+    }
+    
+    if (error instanceof Error) {
+      return NextResponse.json(
+        { error: error.message || 'Internal server error' },
+        { status: 500 }
+      )
+    }
+    
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
