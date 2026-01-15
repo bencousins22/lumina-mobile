@@ -12,9 +12,7 @@ const nextConfig = {
   output: 'standalone',
   distDir: '.next',
   // Ensure proper environment handling
-  experimental: {
-    serverComponentsExternalPackages: ['@supabase/supabase-js'],
-  },
+  serverExternalPackages: ['@supabase/supabase-js'],
 }
 
 export default nextConfig
