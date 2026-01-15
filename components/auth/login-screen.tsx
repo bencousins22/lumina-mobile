@@ -9,7 +9,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Eye, EyeOff, Terminal, Cpu, Network, Shield, Globe } from "lucide-react"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Eye, EyeOff, Terminal, Cpu, Network, Shield, Globe, Mail, Lock, AlertCircle, Check } from "lucide-react"
 
 export function LoginScreen() {
   const router = useRouter()
@@ -18,6 +19,31 @@ export function LoginScreen() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
+  const [rememberMe, setRememberMe] = useState(false)
+
+  // Password strength indicator
+  const getPasswordStrength = (password: string) => {
+    if (!password) return { score: 0, text: "", color: "" }
+    
+    let score = 0
+    if (password.length >= 8) score++
+    if (password.length >= 12) score++
+    if (/[a-z]/.test(password) && /[A-Z]/.test(password)) score++
+    if (/\d/.test(password)) score++
+    if (/[^a-zA-Z\d]/.test(password)) score++
+
+    const levels = [
+      { text: "Weak", color: "text-destructive" },
+      { text: "Fair", color: "text-orange-500" },
+      { text: "Good", color: "text-yellow-500" },
+      { text: "Strong", color: "text-green-500" },
+      { text: "Very Strong", color: "text-green-600" }
+    ]
+
+    return { score, text: levels[score]?.text || "", color: levels[score]?.color || "" }
+  }
+
+  const passwordStrength = getPasswordStrength(password)
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -85,7 +111,7 @@ export function LoginScreen() {
                   <Input
                     id="password"
                     type={showPassword ? "text" : "password"}
-                    placeholder="••••••••••••••••••"
+                    placeholder="Enter your password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="pr-10 h-12 bg-input/50"
@@ -101,10 +127,50 @@ export function LoginScreen() {
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     <span className="sr-only">{showPassword ? "Hide" : "Show"} password</span>
                   </Button>
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 </div>
+                {password && (
+                  <div className="flex items-center gap-2 px-1">
+                    <div className="flex-1 flex gap-1">
+                      {[1, 2, 3, 4, 5].map((level) => (
+                        <div
+                          key={level}
+                          className={`h-1 flex-1 rounded-full ${
+                            level <= passwordStrength.score
+                              ? passwordStrength.score <= 2
+                                ? "bg-destructive"
+                                : passwordStrength.score <= 3
+                                ? "bg-yellow-500"
+                                : "bg-green-500"
+                              : "bg-muted"
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <span className={`text-xs ${passwordStrength.color}`}>
+                      {passwordStrength.text}
+                    </span>
+                  </div>
+                )}
               </div>
 
-              {error && <p className="text-sm text-destructive text-center">{error}</p>}
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="remember"
+                  checked={rememberMe}
+                  onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                />
+                <Label htmlFor="remember" className="text-sm text-muted-foreground">
+                  Remember me for 30 days
+                </Label>
+              </div>
+
+              {error && (
+                <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+                  <AlertCircle className="h-4 w-4 text-destructive" />
+                  <p className="text-sm text-destructive">{error}</p>
+                </div>
+              )}
 
               <Button type="submit" className="w-full h-12 text-base font-medium" disabled={isLoading}>
                 {isLoading ? (

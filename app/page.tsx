@@ -1,15 +1,12 @@
 "use client"
 
-import { useUIContext } from "@/components/providers"
-import { LoginScreen } from "@/components/auth/login-screen"
+import { ProtectedRoute } from "@/components/auth/protected-route"
 import { MainApp } from "@/components/main-app"
 
 export default function Home() {
-  const { isAuthenticated } = useUIContext()
-
-  if (!isAuthenticated) {
-    return <LoginScreen />
-  }
-
-  return <MainApp />
+  return (
+    <ProtectedRoute>
+      <MainApp />
+    </ProtectedRoute>
+  )
 }

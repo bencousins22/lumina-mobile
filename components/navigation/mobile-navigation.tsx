@@ -2,6 +2,7 @@
 
 import { useUIContext, useAgentContext } from "@/components/providers"
 import { Button } from "@/components/ui/button"
+import { UserProfile } from "@/components/auth/user-profile"
 import { MessageSquare, Bot, Brain, Settings, FolderKanban, Store } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -64,6 +65,11 @@ export function MobileNavigation() {
             </Button>
           )
         })}
+        
+        {/* Settings/Profile Button */}
+        <div className="flex flex-col items-center justify-center gap-1 min-w-[64px]">
+          <UserProfile />
+        </div>
       </div>
     </nav>
   )
