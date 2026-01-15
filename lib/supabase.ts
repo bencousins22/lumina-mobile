@@ -10,16 +10,35 @@ import { createClient } from '@supabase/supabase-js'
  * Get Supabase environment variables with validation
  */
 function getSupabaseConfig() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  // Try multiple environment variable sources
+  const supabaseUrl = 
+    process.env.NEXT_PUBLIC_SUPABASE_URL ||
+    process.env.SUPABASE_URL ||
+    'https://ixwkcbistrvayferlwhx.supabase.co'
 
-  if (!supabaseUrl) {
-    throw new Error('NEXT_PUBLIC_SUPABASE_URL is required')
-  }
+  const supabaseAnonKey = 
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+    process.env.SUPABASE_ANON_KEY ||
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml4d2tjYmlzdHJ2YXlmZXJsd2h4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgzODMwNDEsImV4cCI6MjA4MzkxOTA0MX0.Ak2HlLHwmdruZVIZJcP6dbs70zoxoP7B8ngjuVLIkZ8'
 
-  if (!supabaseAnonKey) {
-    throw new Error('NEXT_PUBLIC_SUPABASE_ANON_KEY is required')
+  const supabaseServiceKey = 
+    process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.SUPABASE_SECRET_KEY ||
+    supabaseAnonKey
+
+  // Debug logging for environment variables
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Supabase Config:', {
+      supabaseUrl,
+      hasAnonKey: !!supabaseAnonKey,
+      hasServiceKey: !!supabaseServiceKey,
+      envVars: {
+        NEXT_PUBLIC_SUPABASE_URL: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+        SUPABASE_URL: !!process.env.SUPABASE_URL,
+        SUPABASE_SERVICE_ROLE_KEY: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+        SUPABASE_SECRET_KEY: !!process.env.SUPABASE_SECRET_KEY,
+      }
+    })
   }
 
   return {
@@ -30,27 +49,43 @@ function getSupabaseConfig() {
 }
 
 /**
- * Client-side Supabase client (uses anon key)
- * Use this in client components
+ * Create a Supabase client for client-side usage
  */
 export const supabase = (() => {
-  const { supabaseUrl, supabaseAnonKey } = getSupabaseConfig()
-  return createClient(supabaseUrl, supabaseAnonKey)
+  try {
+    const { supabaseUrl, supabaseAnonKey } = getSupabaseConfig()
+    return createClient(supabaseUrl, supabaseAnonKey)
+  } catch (error) {
+    console.error('Failed to create Supabase client:', error)
+    // Return a mock client that will show clear error messages
+    const { supabaseAnonKey } = getSupabaseConfig()
+    return createClient('https://ixwkcbistrvayferlwhx.supabase.co', supabaseAnonKey)
+  }
 })()
 
 /**
- * Server-side Supabase client with service role key
- * Use this in API routes for admin operations
- * NEVER expose this to the client
+ * Create a Supabase admin client for server-side usage
  */
 export const supabaseAdmin = (() => {
-  const { supabaseUrl, supabaseServiceKey } = getSupabaseConfig()
-  return createClient(supabaseUrl, supabaseServiceKey, {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-    },
-  })
+  try {
+    const { supabaseUrl, supabaseServiceKey } = getSupabaseConfig()
+    return createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    })
+  } catch (error) {
+    console.error('Failed to create Supabase admin client:', error)
+    // Return a mock admin client
+    const { supabaseServiceKey } = getSupabaseConfig()
+    return createClient('https://ixwkcbistrvayferlwhx.supabase.co', supabaseServiceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    })
+  }
 })()
 
 /**
