@@ -3,7 +3,6 @@
 import type React from "react"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
 import { useAuth } from "@/hooks/use-auth"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -13,7 +12,6 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Eye, EyeOff, Terminal, Cpu, Network, Shield, Globe, Mail, Lock, AlertCircle, Check } from "lucide-react"
 
 export function LoginScreen() {
-  const router = useRouter()
   const { login, isLoading, error, clearError } = useAuth()
   
   const [email, setEmail] = useState("")
@@ -51,8 +49,7 @@ export function LoginScreen() {
 
     try {
       await login(email, password)
-      // Redirect to dashboard after successful login
-      router.push('/dashboard')
+      // No redirect needed - ProtectedRoute will automatically show MainApp after login
     } catch (err) {
       // Error is already handled by useAuth hook
       console.error('Login failed:', err)
