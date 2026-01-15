@@ -6,28 +6,52 @@
 
 import { createClient } from '@supabase/supabase-js'
 
-// Environment variables
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || ''
+/**
+ * Get Supabase environment variables with validation
+ */
+function getSupabaseConfig() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+  if (!supabaseUrl) {
+    throw new Error('NEXT_PUBLIC_SUPABASE_URL is required')
+  }
+
+  if (!supabaseAnonKey) {
+    throw new Error('NEXT_PUBLIC_SUPABASE_ANON_KEY is required')
+  }
+
+  return {
+    supabaseUrl,
+    supabaseAnonKey,
+    supabaseServiceKey: supabaseServiceKey || supabaseAnonKey
+  }
+}
 
 /**
  * Client-side Supabase client (uses anon key)
  * Use this in client components
  */
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+export const supabase = (() => {
+  const { supabaseUrl, supabaseAnonKey } = getSupabaseConfig()
+  return createClient(supabaseUrl, supabaseAnonKey)
+})()
 
 /**
  * Server-side Supabase client with service role key
  * Use this in API routes for admin operations
  * NEVER expose this to the client
  */
-export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false,
-  },
-})
+export const supabaseAdmin = (() => {
+  const { supabaseUrl, supabaseServiceKey } = getSupabaseConfig()
+  return createClient(supabaseUrl, supabaseServiceKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  })
+})()
 
 /**
  * Database types (update these based on your Supabase schema)
