@@ -1,4 +1,4 @@
-// Agent Zero API Client - Modified for real backend connection
+// Agent Zero API Client - Complete implementation of all endpoints
 
 import type {
   AgentZeroConfig,
@@ -208,16 +208,6 @@ export class AgentZeroClient {
    */
   async testConnection(): Promise<boolean> {
     try {
-      // For local development with Docker backend
-      if (this.config.baseUrl.includes('localhost:80')) {
-        const response = await fetch(`${this.config.baseUrl}/`, {
-          method: "GET",
-          headers: { "X-API-KEY": this.config.apiKey },
-        })
-        return response.ok
-      }
-      
-      // For production or custom URLs, use the original logic
       const response = await fetch(`${this.config.baseUrl}/`, {
         method: "GET",
         headers: { "X-API-KEY": this.config.apiKey },
@@ -257,7 +247,7 @@ export function getAgentZeroClient(): AgentZeroClient {
     const apiKey = typeof window !== "undefined" ? localStorage.getItem("agentZero_apiKey") : null
 
     clientInstance = new AgentZeroClient({
-      baseUrl: baseUrl || process.env.NEXT_PUBLIC_AGENT_ZERO_URL || "http://localhost:80",
+      baseUrl: baseUrl || process.env.NEXT_PUBLIC_AGENT_ZERO_URL || "http://localhost:50001",
       apiKey: apiKey || process.env.NEXT_PUBLIC_API_KEY || "",
     })
   }

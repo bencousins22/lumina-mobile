@@ -3,8 +3,8 @@
 import type React from "react"
 
 import { useState } from "react"
-import { useUIContext } from "@/components/providers"
-import { useAgentZeroConnection } from "@/hooks/use-agent-zero"
+import { useRouter } from "next/navigation"
+import { useAuth } from "@/hooks/use-auth"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -12,39 +12,24 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Eye, EyeOff, Terminal, Cpu, Network, Shield, Globe } from "lucide-react"
 
 export function LoginScreen() {
-  const { setIsAuthenticated } = useUIContext()
-  const { testConnection, updateConnection } = useAgentZeroConnection()
+  const router = useRouter()
+  const { login, isLoading, error, clearError } = useAuth()
   
-  const [apiKey, setApiKey] = useState("")
-  const [baseUrl, setBaseUrl] = useState("http://localhost:50001")
-  const [showApiKey, setShowApiKey] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState("")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [showPassword, setShowPassword] = useState(false)
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsLoading(true)
-    setError("")
+    clearError()
 
     try {
-      // Update connection settings first
-      updateConnection(baseUrl, apiKey)
-      
-      // Test the connection
-      const isConnected = await testConnection()
-      
-      if (isConnected) {
-        setIsAuthenticated(true)
-        // Store in localStorage for persistence
-        localStorage.setItem("agentZero_baseUrl", baseUrl)
-        localStorage.setItem("agentZero_apiKey", apiKey)
-      } else {
-        setError("Could not connect to Agent Zero. Please check your URL and API Key.")
-      }
+      await login(email, password)
+      // Redirect to dashboard after successful login
+      router.push('/dashboard')
     } catch (err) {
-      setError("An error occurred during connection.")
-    } finally {
-      setIsLoading(false)
+      // Error is already handled by useAuth hook
+      console.error('Login failed:', err)
     }
   }
 
@@ -69,50 +54,52 @@ export function LoginScreen() {
         {/* Login card */}
         <Card className="w-full max-w-sm border-border/50 bg-card/80 backdrop-blur-sm">
           <CardHeader className="text-center pb-4">
-            <CardTitle className="text-xl">Connect to Agent Zero</CardTitle>
-            <CardDescription>Enter your backend URL and API Key to start</CardDescription>
+            <CardTitle className="text-xl">Welcome to Lumina</CardTitle>
+            <CardDescription>Sign in to access your AI framework</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="baseUrl" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground ml-1">
-                  Backend URL
+                <Label htmlFor="email" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground ml-1">
+                  Email
                 </Label>
                 <div className="relative">
                   <Input
-                    id="baseUrl"
-                    type="url"
-                    placeholder="http://localhost:50001"
-                    value={baseUrl}
-                    onChange={(e) => setBaseUrl(e.target.value)}
+                    id="email"
+                    type="email"
+                    placeholder="your@email.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     className="pl-10 h-12 bg-input/50"
+                    required
                   />
                   <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="apiKey" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground ml-1">
-                  API Key
+                <Label htmlFor="password" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground ml-1">
+                  Password
                 </Label>
                 <div className="relative">
                   <Input
-                    id="apiKey"
-                    type={showApiKey ? "text" : "password"}
-                    placeholder="Enter API Key"
-                    value={apiKey}
-                    onChange={(e) => setApiKey(e.target.value)}
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="••••••••••••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     className="pr-10 h-12 bg-input/50"
+                    required
                   />
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
                     className="absolute right-1 top-1/2 -translate-y-1/2 h-10 w-10 text-muted-foreground hover:text-foreground"
-                    onClick={() => setShowApiKey(!showApiKey)}
+                    onClick={() => setShowPassword(!showPassword)}
                   >
-                    {showApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    <span className="sr-only">{showApiKey ? "Hide" : "Show"} key</span>
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    <span className="sr-only">{showPassword ? "Hide" : "Show"} password</span>
                   </Button>
                 </div>
               </div>
@@ -123,10 +110,10 @@ export function LoginScreen() {
                 {isLoading ? (
                   <span className="flex items-center gap-2">
                     <span className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-                    Connecting...
+                    Signing In...
                   </span>
                 ) : (
-                  "Access Control Panel"
+                  "Sign In"
                 )}
               </Button>
             </form>
