@@ -3,7 +3,7 @@
 import { useUIContext, useAgentContext } from "@/components/providers"
 import { Button } from "@/components/ui/button"
 import { UserProfile } from "@/components/auth/user-profile"
-import { MessageSquare, Bot, Brain, Settings, FolderKanban, Store } from "lucide-react"
+import { MessageSquare, Bot, Brain, Settings, FolderKanban, Store, Server } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const navItems = [
@@ -12,6 +12,7 @@ const navItems = [
   { id: "chat", label: "Chat", icon: MessageSquare },
   { id: "projects", label: "Projects", icon: FolderKanban },
   { id: "memory", label: "Memory", icon: Brain },
+  { id: "agent-zero", label: "Agent Zero", icon: Server },
 ] as const
 
 export function MobileNavigation() {

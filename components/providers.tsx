@@ -131,8 +131,8 @@ export function useChatContext() {
 interface UIContextType {
   isSidebarOpen: boolean
   setIsSidebarOpen: (open: boolean) => void
-  activePanel: "chat" | "agents" | "memory" | "settings" | "projects" | "marketplace"
-  setActivePanel: (panel: "chat" | "agents" | "memory" | "settings" | "projects" | "marketplace") => void
+  activePanel: "chat" | "agents" | "memory" | "settings" | "projects" | "marketplace" | "agent-zero"
+  setActivePanel: (panel: "chat" | "agents" | "memory" | "settings" | "projects" | "marketplace" | "agent-zero") => void
   isAuthenticated: boolean
   setIsAuthenticated: (auth: boolean) => void
   showAgentHierarchy: boolean
@@ -274,7 +274,7 @@ export function Providers({ children }: { children: ReactNode }) {
 
   // UI state
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
-  const [activePanel, setActivePanel] = useState<"chat" | "agents" | "memory" | "settings" | "projects" | "marketplace">("chat")
+  const [activePanel, setActivePanel] = useState<"chat" | "agents" | "memory" | "settings" | "projects" | "marketplace" | "agent-zero">("chat")
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [showAgentHierarchy, setShowAgentHierarchy] = useState(false)
   const [compactMode, setCompactMode] = useState(false)

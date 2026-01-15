@@ -1,55 +1,228 @@
-// Custom hooks for Agent Zero API interactions
+/**
+ * Agent Zero Instance Manager Hook
+ * 
+ * Manages deployment and connection to isolated Agent Zero instances
+ */
 
 "use client"
 
 import { useCallback, useEffect, useRef, useState } from "react"
 import useSWR from "swr"
-import { getAgentZeroClient, resetAgentZeroClient } from "@/lib/agent-zero-client"
+import { useAuth } from './use-auth'
 import { useChatStore, useSettingsStore } from "@/stores/app-store"
 import type { Message, LogItem, ToolCall } from "@/types/agent-zero"
 
-// ============ Connection Hook ============
+export interface AgentZeroInstance {
+  instanceId: string
+  instanceUrl: string
+  projectId: string
+  region: string
+  accessToken: string
+  refreshToken: string
+  createdAt: string
+  expiresAt: string
+}
 
-export function useAgentZeroConnection() {
-  const { baseUrl, apiKey, setIsConnected } = useSettingsStore()
+export interface InstanceConfig {
+  userId: string
+  userEmail: string
+  userName: string
+}
+
+export function useAgentZero() {
+  const { user } = useAuth()
+  const [instance, setInstance] = useState<AgentZeroInstance | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const testConnection = useCallback(async () => {
+  const deployInstance = useCallback(async () => {
+    if (!user) {
+      setError('User must be authenticated to deploy Agent Zero')
+      return
+    }
+
     setIsLoading(true)
     setError(null)
 
     try {
-      const client = getAgentZeroClient()
-      client.updateConfig({ baseUrl, apiKey })
+      const config: InstanceConfig = {
+        userId: user.id,
+        userEmail: user.email,
+        userName: user.name,
+      }
 
-      const isConnected = await client.testConnection()
+      const response = await fetch('/api/deploy-agent-zero', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(config),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to deploy instance')
+      }
+
+      const newInstance = await response.json()
+      setInstance(newInstance)
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to deploy instance'
+      setError(errorMessage)
+    } finally {
+      setIsLoading(false)
+    }
+  }, [user])
+
+  const deleteInstance = useCallback(async () => {
+    if (!instance) {
+      setError('No instance to delete')
+      return
+    }
+
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      const response = await fetch(`/api/deploy-agent-zero?instanceId=${instance.instanceId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to delete instance')
+      }
+
+      setInstance(null)
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to delete instance'
+      setError(errorMessage)
+    } finally {
+      setIsLoading(false)
+    }
+  }, [instance])
+
+  const refreshInstance = useCallback(async () => {
+    if (!instance) {
+      setError('No instance to refresh')
+      return
+    }
+
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      const response = await fetch('/api/auth/refresh', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to refresh token')
+      }
+
+      // Update instance with new token if needed
+      const data = await response.json()
+      setInstance(prev => prev ? { ...prev, accessToken: data.accessToken } : null)
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to refresh instance'
+      setError(errorMessage)
+    } finally {
+      setIsLoading(false)
+    }
+  }, [instance])
+
+  // Auto-load user's instances when authenticated
+  useEffect(() => {
+    if (!user) return
+
+    const loadInstances = async () => {
+      try {
+        const response = await fetch(`/api/deploy-agent-zero?userId=${user.id}`, {
+          method: 'GET',
+          credentials: 'include',
+        })
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch instances')
+        }
+
+        const data = await response.json()
+        const instances = data.instances || []
+
+        if (instances.length > 0) {
+          setInstance(instances[0]) // Use the most recent instance
+        }
+      } catch (err) {
+        console.error('Failed to load instances:', err)
+      }
+    }
+
+    loadInstances()
+  }, [user])
+
+  return {
+    instance,
+    isLoading,
+    error,
+    deployInstance,
+    deleteInstance,
+    refreshInstance,
+  }
+}
+
+// ============ Connection Hook ============
+
+export function useAgentZeroConnection() {
+  const { instance } = useAgentZero()
+  const { setIsConnected } = useSettingsStore()
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const testConnection = useCallback(async () => {
+    if (!instance) {
+      setError('No Agent Zero instance deployed')
+      return false
+    }
+
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      const response = await fetch(`${instance.instanceUrl}/`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${instance.accessToken}`,
+          'Content-Type': 'application/json',
+        },
+      })
+
+      const isConnected = response.ok
       setIsConnected(isConnected)
 
       if (!isConnected) {
-        setError("Failed to connect to Agent Zero")
+        setError('Failed to connect to Agent Zero instance')
       }
 
       return isConnected
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Connection failed")
+      setError(e instanceof Error ? e.message : 'Connection failed')
       setIsConnected(false)
       return false
     } finally {
       setIsLoading(false)
     }
-  }, [baseUrl, apiKey, setIsConnected])
-
-  const updateConnection = useCallback((newBaseUrl: string, newApiKey: string) => {
-    resetAgentZeroClient()
-    useSettingsStore.getState().setConnectionSettings(newBaseUrl, newApiKey)
-  }, [])
+  }, [instance, setIsConnected])
 
   return {
     isLoading,
     error,
     testConnection,
-    updateConnection,
   }
 }
 
@@ -73,110 +246,9 @@ export function useChat() {
     updateAgent,
   } = useChatStore()
 
-  const { baseUrl, apiKey } = useSettingsStore()
+  const { instance } = useAgentZero()
   const cleanupRef = useRef<(() => void) | null>(null)
   const pollingRef = useRef<NodeJS.Timeout | null>(null)
-
-  // Process log items into messages
-  const processLogItem = useCallback(
-    (log: LogItem) => {
-      switch (log.type) {
-        case "user":
-          addMessage({
-            id: log.id || crypto.randomUUID(),
-            role: "user",
-            content: log.content,
-            timestamp: new Date(log.timestamp),
-          })
-          break
-
-        case "agent":
-        case "response":
-          const existingMessage = messages.find((m) => m.id === log.id && m.isStreaming)
-
-          if (existingMessage) {
-            updateMessage(log.id, {
-              content: log.content,
-              isStreaming: log.streaming ?? false,
-            })
-          } else {
-            addMessage({
-              id: log.id || crypto.randomUUID(),
-              role: "agent",
-              content: log.content,
-              timestamp: new Date(log.timestamp),
-              agentId: log.agent_id,
-              agentName: log.agent_name,
-              isStreaming: log.streaming ?? false,
-            })
-          }
-
-          if (log.agent_id) {
-            setActiveAgentId(log.agent_id)
-            addAgent({
-              id: log.agent_id,
-              name: log.agent_name || `Agent ${log.agent_id}`,
-              level: Number.parseInt(log.agent_id) || 0,
-              status: log.streaming ? "thinking" : "idle",
-            })
-          }
-          break
-
-        case "tool_call":
-          const toolCall: ToolCall = {
-            id: log.id || crypto.randomUUID(),
-            name: log.tool_name || "unknown",
-            args: log.tool_args || {},
-            status: "running",
-            startTime: new Date(log.timestamp),
-          }
-
-          // Add to last agent message
-          const lastAgentMsg = [...messages].reverse().find((m) => m.role === "agent")
-          if (lastAgentMsg) {
-            updateMessage(lastAgentMsg.id, {
-              toolCalls: [...(lastAgentMsg.toolCalls || []), toolCall],
-            })
-          }
-          break
-
-        case "tool_result":
-          // Update tool call with result
-          const agentMsg = [...messages].reverse().find((m) => m.role === "agent" && m.toolCalls?.length)
-          if (agentMsg) {
-            const updatedToolCalls = agentMsg.toolCalls?.map((tc) =>
-              tc.name === log.tool_name
-                ? {
-                    ...tc,
-                    result: log.tool_result || log.content,
-                    status: "completed" as const,
-                    endTime: new Date(log.timestamp),
-                  }
-                : tc,
-            )
-            updateMessage(agentMsg.id, { toolCalls: updatedToolCalls })
-          }
-          break
-
-        case "delegation":
-          if (log.agent_id) {
-            addAgent({
-              id: log.agent_id,
-              name: log.agent_name || `Agent ${log.agent_id}`,
-              level: Number.parseInt(log.agent_id) || 0,
-              status: "delegating",
-              currentTask: log.content,
-            })
-          }
-          break
-
-        case "error":
-          setError(log.content)
-          break
-      }
-    },
-    [messages, addMessage, updateMessage, addAgent, setActiveAgentId, setError],
-  )
 
   // Send message
   const sendMessage = useCallback(
@@ -196,8 +268,9 @@ export function useChat() {
       addMessage(userMessage)
 
       try {
-        const client = getAgentZeroClient()
-        client.updateConfig({ baseUrl, apiKey })
+        if (!instance) {
+          throw new Error('No Agent Zero instance available')
+        }
 
         // Convert attachments to base64
         const base64Attachments = attachments
@@ -209,32 +282,42 @@ export function useChat() {
             )
           : undefined
 
-        const response = await client.sendMessage({
-          message: content,
-          context_id: contextId || undefined,
-          attachments: base64Attachments,
-          lifetime_hours: 24,
+        const response = await fetch(`${instance.instanceUrl}/api_message`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${instance.accessToken}`,
+            'Content-Type': 'application/json',
+            'X-API-KEY': 'instance-api-key',
+          },
+          body: JSON.stringify({
+            message: content,
+            context_id: contextId || undefined,
+            attachments: base64Attachments,
+            lifetime_hours: 24,
+          }),
         })
+
+        const responseData = await response.json()
 
         // Update context ID if new
         if (!contextId) {
-          setContextId(response.context_id)
+          setContextId(responseData.context_id)
         }
 
         // Add agent response
         addMessage({
           id: crypto.randomUUID(),
           role: "agent",
-          content: response.response,
+          content: responseData.response,
           timestamp: new Date(),
         })
       } catch (e) {
-        setError(e instanceof Error ? e.message : "Failed to send message")
+        setError(e instanceof Error ? e.message : 'Failed to send message')
       } finally {
         setIsStreaming(false)
       }
     },
-    [contextId, baseUrl, apiKey, addMessage, setContextId, setIsStreaming, setError],
+    [contextId, instance, addMessage, setContextId, setIsStreaming, setError],
   )
 
   // Start new chat
@@ -250,29 +333,49 @@ export function useChat() {
 
   // Reset current chat
   const resetChat = useCallback(async () => {
-    if (!contextId) return
+    if (!contextId || !instance) return
 
     try {
-      const client = getAgentZeroClient()
-      await client.resetChat(contextId)
+      const response = await fetch(`${instance.instanceUrl}/api_reset_chat`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${instance.accessToken}`,
+          'Content-Type': 'application/json',
+          'X-API-KEY': 'instance-api-key',
+        },
+        body: JSON.stringify({
+          context_id: contextId,
+        }),
+      })
+      
       clearMessages()
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to reset chat")
+      setError(e instanceof Error ? e.message : 'Failed to reset chat')
     }
-  }, [contextId, clearMessages, setError])
+  }, [contextId, instance, clearMessages, setError])
 
   // Terminate chat
   const terminateChat = useCallback(async () => {
-    if (!contextId) return
+    if (!contextId || !instance) return
 
     try {
-      const client = getAgentZeroClient()
-      await client.terminateChat(contextId)
+      await fetch(`${instance.instanceUrl}/api_terminate_chat`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${instance.accessToken}`,
+          'Content-Type': 'application/json',
+          'X-API-KEY': 'instance-api-key',
+        },
+        body: JSON.stringify({
+          context_id: contextId,
+        }),
+      })
+      
       startNewChat()
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to terminate chat")
+      setError(e instanceof Error ? e.message : 'Failed to terminate chat')
     }
-  }, [contextId, startNewChat, setError])
+  }, [contextId, instance, startNewChat, setError])
 
   // Cleanup on unmount
   useEffect(() => {
@@ -299,18 +402,28 @@ export function useChat() {
 // ============ Logs Hook ============
 
 export function useLogs(contextId: string | null) {
-  const { baseUrl, apiKey } = useSettingsStore()
+  const { instance } = useAgentZero()
 
   const fetcher = async () => {
-    if (!contextId) return null
+    if (!contextId || !instance) return null
 
-    const client = getAgentZeroClient()
-    client.updateConfig({ baseUrl, apiKey })
+    const response = await fetch(`${instance.instanceUrl}/api_log_get`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${instance.accessToken}`,
+        'Content-Type': 'application/json',
+        'X-API-KEY': 'instance-api-key',
+      },
+      body: JSON.stringify({
+        context_id: contextId,
+        length: 100,
+      }),
+    })
 
-    return client.getLogs(contextId, 100)
+    return response.json()
   }
 
-  const { data, error, isLoading, mutate } = useSWR(contextId ? ["logs", contextId] : null, fetcher, {
+  const { data, error, isLoading, mutate } = useSWR(contextId && instance ? ["logs", contextId] : null, fetcher, {
     refreshInterval: 0, // Manual refresh only
   })
 
@@ -326,7 +439,7 @@ export function useLogs(contextId: string | null) {
 // ============ Files Hook ============
 
 export function useFiles() {
-  const { baseUrl, apiKey } = useSettingsStore()
+  const { instance } = useAgentZero()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -336,18 +449,31 @@ export function useFiles() {
       setError(null)
 
       try {
-        const client = getAgentZeroClient()
-        client.updateConfig({ baseUrl, apiKey })
+        if (!instance) {
+          throw new Error('No Agent Zero instance available')
+        }
 
-        return await client.getFiles(paths)
+        const response = await fetch(`${instance.instanceUrl}/api_files_get`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${instance.accessToken}`,
+            'Content-Type': 'application/json',
+            'X-API-KEY': 'instance-api-key',
+          },
+          body: JSON.stringify({
+            paths,
+          }),
+        })
+
+        return response.json()
       } catch (e) {
-        setError(e instanceof Error ? e.message : "Failed to get files")
+        setError(e instanceof Error ? e.message : 'Failed to get files')
         return null
       } finally {
         setIsLoading(false)
       }
     },
-    [baseUrl, apiKey],
+    [instance],
   )
 
   return {

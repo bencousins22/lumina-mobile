@@ -19,6 +19,7 @@ const MemoryPanel = lazy(() => import("@/components/memory/memory-panel"))
 const SettingsPanel = lazy(() => import("@/components/settings/settings-panel"))
 const ProjectsPanel = lazy(() => import("@/components/projects/projects-panel"))
 const MarketplacePanel = lazy(() => import("@/components/marketplace/marketplace-panel"))
+const AgentZeroPanel = lazy(() => import("@/components/agent-zero/agent-zero-deployer"))
 
 export function MainApp() {
   const { activePanel, isSidebarOpen, setIsSidebarOpen } = useUIContext()
@@ -60,6 +61,12 @@ export function MainApp() {
         return (
           <Suspense fallback={<AgentsSkeleton />}>
              <MarketplacePanel />
+          </Suspense>
+        )
+      case "agent-zero":
+        return (
+          <Suspense fallback={<SettingsSkeleton />}>
+            <AgentZeroPanel />
           </Suspense>
         )
       default:
