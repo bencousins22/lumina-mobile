@@ -8,7 +8,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react"
 import useSWR from "swr"
-import { useAuth } from './use-auth'
+import { useAuth } from "@/hooks/use-auth"
 import { useChatStore, useSettingsStore } from "@/stores/app-store"
 import type { Message, LogItem, ToolCall } from "@/types/agent-zero"
 

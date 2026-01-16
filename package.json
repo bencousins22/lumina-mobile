@@ -107,6 +107,7 @@
     "@testing-library/user-event": "^14.6.1",
     "@types/bcryptjs": "^2.4.6",
     "@types/jsonwebtoken": "^9.0.10",
+    "@types/minimatch": "^5.1.2",
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
