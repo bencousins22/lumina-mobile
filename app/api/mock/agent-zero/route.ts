@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   return NextResponse.json({ 
     status: 'ok', 
     message: 'Mock Agent Zero backend running'
@@ -12,7 +12,6 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const endpoint = searchParams.get('endpoint')
-  const data = await request.json()
 
   // Mock response for different endpoints
   switch(endpoint) {

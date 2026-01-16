@@ -36,32 +36,6 @@ export function AgentZeroDeployer() {
     await refreshInstance()
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "active":
-        return "bg-green-500"
-      case "deploying":
-        return "bg-yellow-500"
-      case "error":
-        return "bg-red-500"
-      default:
-        return "bg-gray-500"
-    }
-  }
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case "active":
-        return "Active"
-      case "deploying":
-        return "Deploying"
-      case "error":
-        return "Error"
-      default:
-        return "Unknown"
-    }
-  }
-
   if (error) {
     return (
       <Alert variant="destructive">

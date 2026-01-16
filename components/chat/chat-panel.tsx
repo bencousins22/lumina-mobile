@@ -5,7 +5,7 @@ import { useUIContext, useSettings } from "@/components/providers"
 import { useChat } from "@/hooks/use-agent-zero"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { Menu, Send, Paperclip, StopCircle, Sparkles, X } from "lucide-react"
+import { Menu, Send, Paperclip, StopCircle, Sparkles } from "lucide-react"
 import { ChatMessage } from "./chat-message"
 import { WelcomeScreen } from "./welcome-screen"
 import { VoiceInput } from "./voice-input"
@@ -50,7 +50,11 @@ const MessageArea = () => {
 
   useEffect(() => {
     if (scrollRef.current) {
-      setTimeout(() => (scrollRef.current.scrollTop = scrollRef.current.scrollHeight), 100)
+      setTimeout(() => {
+        if (scrollRef.current) {
+          scrollRef.current.scrollTop = scrollRef.current.scrollHeight
+        }
+      }, 100)
     }
   }, [messages, isStreaming])
 
@@ -90,7 +94,8 @@ const TypingIndicator = () => (
 )
 
 const ChatInput = () => {
-  const { isStreaming, sendMessage, stopStreaming } = useChat()
+  const { isStreaming, sendMessage } = useChat()
+  const stopStreaming = () => {}
   const [input, setInput] = useState("")
   const [attachments, setAttachments] = useState<File[]>([])
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -134,7 +139,10 @@ const ChatInput = () => {
     <div className="safe-bottom border-t border-border bg-card/70 backdrop-blur-lg">
       {attachments.length > 0 && (
         <div className="max-w-4xl mx-auto pt-3 px-4">
-          <FileAttachmentPreview files={attachments} onRemove={handleRemoveAttachment} />
+          <FileAttachmentPreview 
+            attachments={attachments.map(file => ({ filename: file.name, base64: "", size: file.size, type: file.type }))} 
+            onRemove={handleRemoveAttachment} 
+          />
         </div>
       )}
       <div className="p-4 flex items-end gap-3 max-w-4xl mx-auto">

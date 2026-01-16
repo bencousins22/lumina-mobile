@@ -157,8 +157,12 @@ const AuthForm = () => {
       } else {
         await signIn(email, password)
       }
-    } catch (err: any) {
-      setFormError(err.message || (isSignUp ? "Signup failed" : "Login failed"))
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setFormError(err.message || (isSignUp ? "Signup failed" : "Login failed"))
+      } else {
+        setFormError(isSignUp ? "Signup failed" : "Login failed")
+      }
     }
   }
 
@@ -201,7 +205,7 @@ const AuthForm = () => {
                 type={showPassword ? "text" : "password"}
                 placeholder={isSignUp ? "Create a strong password" : "Enter your password"}
                 value={password}
-                onChange={(e) => setPassword(e.targe.value)}
+                onChange={(e) => setPassword(e.target.value)}
                 autoComplete={isSignUp ? "new-password" : "current-password"}
                 className="pr-12 h-12 bg-input/50"
                 required
