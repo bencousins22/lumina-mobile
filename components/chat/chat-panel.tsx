@@ -5,11 +5,11 @@ import { useUIContext, useSettings } from "@/components/providers"
 import { useChat } from "@/hooks/use-agent-zero"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { Menu, Send, Paperclip, StopCircle, Sparkles } from "lucide-react"
-import { ChatMessage } from "./chat-message"
+import { Menu, Send, StopCircle, Sparkles } from "lucide-react"
 import { WelcomeScreen } from "./welcome-screen"
 import { VoiceInput } from "./voice-input"
-import { FileAttachmentPreview } from "./file-attachment-preview"
+import { ChatHistory } from "./chat-history"
+import { FileAttachmentButton } from "./file-attachment-button"
 import { cn } from "@/lib/utils"
 
 // --- Child Components ---
@@ -45,7 +45,7 @@ const ChatHeader = () => {
 }
 
 const MessageArea = () => {
-  const { messages, isStreaming, sendMessage } = useChat()
+  const { messages, isStreaming, sendMessage, editMessage } = useChat()
   const scrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -68,12 +68,8 @@ const MessageArea = () => {
 
   return (
     <div ref={scrollRef} className="flex-1 overflow-y-auto">
-      <div className="p-4 space-y-6 pb-16">
-        {messages.map((msg) => (
-          <ChatMessage key={msg.id} message={msg} />
-        ))}
+        <ChatHistory messages={messages} onEdit={editMessage} />
         {isStreaming && <TypingIndicator />}
-      </div>
     </div>
   )
 }
@@ -99,7 +95,6 @@ const ChatInput = () => {
   const [input, setInput] = useState("")
   const [attachments, setAttachments] = useState<File[]>([])
   const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -116,15 +111,9 @@ const ChatInput = () => {
     setAttachments([])
   }, [input, attachments, isStreaming, sendMessage])
 
-  const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || [])
-    setAttachments((prev) => [...prev, ...files])
-    if (fileInputRef.current) fileInputRef.current.value = ""
-  }, [])
-
-  const handleRemoveAttachment = useCallback((index: number) => {
-    setAttachments((prev) => prev.filter((_, i) => i !== index))
-  }, [])
+  const handleFileSelect = (file: File) => {
+    setAttachments((prev) => [...prev, file]);
+  };
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -137,26 +126,8 @@ const ChatInput = () => {
 
   return (
     <div className="safe-bottom border-t border-border bg-card/70 backdrop-blur-lg">
-      {attachments.length > 0 && (
-        <div className="max-w-4xl mx-auto pt-3 px-4">
-          <FileAttachmentPreview 
-            attachments={attachments.map(file => ({ filename: file.name, base64: "", size: file.size, type: file.type }))} 
-            onRemove={handleRemoveAttachment} 
-          />
-        </div>
-      )}
       <div className="p-4 flex items-end gap-3 max-w-4xl mx-auto">
-        <input type="file" ref={fileInputRef} onChange={handleFileSelect} multiple className="hidden" />
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => fileInputRef.current?.click()}
-          className="shrink-0 h-11 w-11 rounded-xl text-muted-foreground hover:text-primary hover:bg-primary/10"
-        >
-          <Paperclip className="h-5 w-5" />
-          <span className="sr-only">Attach file</span>
-        </Button>
-
+        <FileAttachmentButton onFileSelect={handleFileSelect} />
         <div className="flex-1 relative">
           <Textarea
             ref={textareaRef}

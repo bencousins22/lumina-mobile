@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Checkbox } from "@/components/ui/checkbox"
 import { Eye, EyeOff, Terminal, Cpu, Network, Shield, Mail, AlertCircle, Check } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 // --- Helper Hooks & Components ---
 
@@ -232,10 +233,13 @@ const AuthForm = () => {
           )}
           
           {formError && (
-            <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
-              <AlertCircle className="h-4 w-4 text-destructive" />
-              <p className="text-sm text-destructive">{formError}</p>
-            </div>
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>{isSignUp ? "Signup Failed" : "Login Failed"}</AlertTitle>
+              <AlertDescription>
+                {formError}
+              </AlertDescription>
+            </Alert>
           )}
 
           <Button type="submit" className="w-full h-12 text-base font-medium" disabled={isAuthLoading}>

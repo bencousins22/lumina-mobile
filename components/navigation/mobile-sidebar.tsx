@@ -1,10 +1,11 @@
 "use client"
 
+import Link from "next/link"
 import { useUIContext, useChatContext, useAgentContext } from "@/components/providers"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
-import { X, Plus, MessageSquare, Terminal, Clock, Settings, LogOut } from "lucide-react"
+import { X, Plus, MessageSquare, Terminal, Clock, Settings, LogOut, Users } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { formatDistanceToNow } from "date-fns"
 
@@ -118,6 +119,16 @@ export function MobileSidebar({ open, onClose }: MobileSidebarProps) {
 
         <div className="p-3 border-t border-sidebar-border bg-sidebar/50 shrink-0">
           <div className="space-y-1">
+            <Button
+              variant="ghost"
+              className="w-full justify-start gap-3 h-10 px-3 text-sidebar-foreground hover:bg-sidebar-accent"
+              asChild
+            >
+              <Link href="/agents" onClick={onClose}>
+                <Users className="h-4 w-4" />
+                <span className="text-sm font-medium">Browse Agents</span>
+              </Link>
+            </Button>
             <Button
               variant="ghost"
               className="w-full justify-start gap-3 h-10 px-3 text-sidebar-foreground hover:bg-sidebar-accent"

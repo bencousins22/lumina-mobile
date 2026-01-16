@@ -22,8 +22,10 @@ export function useAuth() {
       const userProfile = await fbSignUp(email, password);
       setUser(userProfile);
     } catch (error) {
-      console.error("Error signing up:", error);
-      throw error;
+      if (error instanceof Error) {
+        throw new Error(`Sign-up failed: ${error.message}`);
+      }
+      throw new Error("An unknown error occurred during sign-up.");
     }
   };
 
@@ -32,8 +34,10 @@ export function useAuth() {
       const userProfile = await fbSignIn(email, password);
       setUser(userProfile);
     } catch (error) {
-      console.error("Error signing in:", error);
-      throw error;
+      if (error instanceof Error) {
+        throw new Error(`Sign-in failed: ${error.message}`);
+      }
+      throw new Error("An unknown error occurred during sign-in.");
     }
   };
 
@@ -42,7 +46,10 @@ export function useAuth() {
       await fbLogOut();
       setUser(null);
     } catch (error) {
-      console.error("Error logging out:", error);
+      if (error instanceof Error) {
+        throw new Error(`Log-out failed: ${error.message}`);
+      }
+      throw new Error("An unknown error occurred during log-out.");
     }
   };
 

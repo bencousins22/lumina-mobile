@@ -320,6 +320,16 @@ export function useChat() {
     [contextId, instance, addMessage, setContextId, setIsStreaming, setError],
   )
 
+  const editMessage = useCallback(
+    (messageId: string, newContent: string) => {
+      const message = messages.find(m => m.id === messageId);
+      if (message) {
+        updateMessage(messageId, { ...message, content: newContent, edited: true });
+      }
+    },
+    [messages, updateMessage]
+  );
+
   // Start new chat
   const startNewChat = useCallback(() => {
     cleanupRef.current?.()
@@ -393,6 +403,7 @@ export function useChat() {
     isStreaming,
     error,
     sendMessage,
+    editMessage,
     startNewChat,
     resetChat,
     terminateChat,

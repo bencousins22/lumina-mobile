@@ -98,6 +98,7 @@ export interface Message {
   attachments?: Attachment[]
   isStreaming?: boolean
   error?: string
+  edited?: boolean
 }
 
 export interface ToolCall {
