@@ -11,7 +11,7 @@ import {
   DocumentData,
   QuerySnapshot,
   DocumentSnapshot,
-  docData,
+  onSnapshot,
 } from 'firebase/firestore';
 
 // Generic function to get a collection
@@ -34,7 +34,7 @@ export async function addDocument(collectionName: string, data: object): Promise
 }
 
 // Generic function to update a document
-export async function updateDocument(collectionName: string, id: string, data: object): Promise<void> {
+export async function updateDocument(collectionName: string, id: string, data: any): Promise<void> {
   const docRef = doc(db, collectionName, id);
   await updateDoc(docRef, data);
 }
@@ -48,7 +48,7 @@ export async function deleteDocument(collectionName: string, id: string): Promis
 // Get realtime updates for a document
 export function getDocumentRealtime(collectionName: string, id: string, callback: (data: DocumentData | null) => void) {
     const docRef = doc(db, collectionName, id);
-    return docData(docRef, (data) => {
-        callback(data)
+    return onSnapshot(docRef, (doc) => {
+        callback(doc.data() || null)
     });
 }
