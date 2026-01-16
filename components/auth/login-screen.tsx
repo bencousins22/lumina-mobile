@@ -201,7 +201,7 @@ const AuthForm = () => {
                 type={showPassword ? "text" : "password"}
                 placeholder={isSignUp ? "Create a strong password" : "Enter your password"}
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => setPassword(e.targe.value)}
                 autoComplete={isSignUp ? "new-password" : "current-password"}
                 className="pr-12 h-12 bg-input/50"
                 required
@@ -258,7 +258,7 @@ const AuthForm = () => {
 
 export function LoginScreen() {
   return (
-    <div className="min-h-dvh flex flex-col bg-background p-4 safe-top safe-bottom">
+    <div className="h-dvh flex flex-col bg-background p-4 safe-top safe-bottom overflow-hidden">
       <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-pulse" />
         <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-chart-2/5 rounded-full blur-3xl animate-pulse animation-delay-300" />

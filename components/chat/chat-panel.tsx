@@ -5,7 +5,6 @@ import { useUIContext, useSettings } from "@/components/providers"
 import { useChat } from "@/hooks/use-agent-zero"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { Menu, Send, Paperclip, StopCircle, Sparkles, X } from "lucide-react"
 import { ChatMessage } from "./chat-message"
 import { WelcomeScreen } from "./welcome-screen"
@@ -50,9 +49,8 @@ const MessageArea = () => {
   const scrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const scrollContainer = scrollRef.current?.querySelector('[data-slot="scroll-area-viewport"]')
-    if (scrollContainer) {
-      setTimeout(() => (scrollContainer.scrollTop = scrollContainer.scrollHeight), 100)
+    if (scrollRef.current) {
+      setTimeout(() => (scrollRef.current.scrollTop = scrollRef.current.scrollHeight), 100)
     }
   }, [messages, isStreaming])
 
@@ -65,14 +63,14 @@ const MessageArea = () => {
   }
 
   return (
-    <ScrollArea ref={scrollRef} className="flex-1" scrollHideDelay={0}>
+    <div ref={scrollRef} className="flex-1 overflow-y-auto">
       <div className="p-4 space-y-6 pb-16">
         {messages.map((msg) => (
           <ChatMessage key={msg.id} message={msg} />
         ))}
         {isStreaming && <TypingIndicator />}
       </div>
-    </ScrollArea>
+    </div>
   )
 }
 

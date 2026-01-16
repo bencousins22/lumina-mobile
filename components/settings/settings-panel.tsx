@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -272,7 +271,7 @@ function SettingsPanel() {
   return (
     <div className="h-full flex flex-col bg-background">
       <SettingsHeader />
-      <ScrollArea className="flex-1">
+      <div className="flex-1 overflow-y-auto">
         <Tabs defaultValue="general" className="p-4 md:p-6">
           <TabsList className="grid w-full grid-cols-3 mb-4">
             <TabsTrigger value="general">General</TabsTrigger>
@@ -297,7 +296,7 @@ function SettingsPanel() {
             </TabsContent>
           </div>
         </Tabs>
-      </ScrollArea>
+      </div>
     </div>
   )
 }

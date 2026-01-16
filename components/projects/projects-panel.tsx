@@ -4,7 +4,6 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { Badge } from "@/components/ui/badge"
 import {
   Plus,
@@ -110,7 +109,7 @@ function ProjectsPanel() {
         </div>
       </header>
 
-      <ScrollArea className="flex-1 scrollbar-thin">
+      <div className="flex-1 scrollbar-thin overflow-y-auto">
         <div className="p-4 space-y-3">
           {filteredProjects.length === 0 ? (
             <Card className="border-dashed">
@@ -216,7 +215,7 @@ function ProjectsPanel() {
             ))
           )}
         </div>
-      </ScrollArea>
+      </div>
     </div>
   )
 }

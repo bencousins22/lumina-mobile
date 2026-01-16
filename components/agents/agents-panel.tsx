@@ -4,7 +4,6 @@ import { useState } from "react"
 import { useAgentContext } from "@/components/providers"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { Badge } from "@/components/ui/badge"
 import { Plus, Bot, MoreVertical, Activity, Cpu, Network, Settings2, Trash2, Play, Pause } from "lucide-react"
 import {
@@ -65,7 +64,7 @@ function AgentsPanel() {
         </div>
       </header>
 
-      <ScrollArea className="flex-1 scrollbar-thin">
+      <div className="flex-1 scrollbar-thin overflow-y-auto">
         <div className="p-4 space-y-4">
           {/* Active Agent Card */}
           {currentAgent && (
@@ -204,7 +203,7 @@ function AgentsPanel() {
             )}
           </div>
         </div>
-      </ScrollArea>
+      </div>
 
       {/* Agent detail sheet */}
       <AgentDetailSheet agentId={selectedAgent} onClose={() => setSelectedAgent(null)} />
