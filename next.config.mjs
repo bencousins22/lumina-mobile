@@ -13,6 +13,11 @@ const nextConfig = {
   distDir: '.next',
   // Ensure proper environment handling
   serverExternalPackages: ['@supabase/supabase-js'],
+  experimental: {
+    turbo: {
+      rootDir: __dirname,
+    },
+  },
 }
 
 export default nextConfig
