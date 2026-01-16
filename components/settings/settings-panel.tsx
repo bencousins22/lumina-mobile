@@ -28,8 +28,8 @@ import {
   CheckCircle2,
   XCircle,
   RefreshCw,
-  Icon as LucideIcon,
 } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 // --- Constants & Data ---
 const APP_VERSION = "v0.6.0-beta"
@@ -50,7 +50,7 @@ const SettingsHeader = () => (
 )
 
 interface SettingsCardProps extends React.HTMLAttributes<HTMLDivElement> {
-  icon: LucideIcon
+  icon: React.ElementType
   title: string
   description?: string
 }
@@ -142,7 +142,7 @@ const ModelsCard = () => (
 
 const ConnectionCard = () => {
   const { isConnected } = useSettings()
-  const { baseUrl, apiKey, setConnectionDetails } = useSettingsStore()
+  const { baseUrl, apiKey, setConnectionSettings } = useSettingsStore()
   const { testConnection, isLoading: isTesting } = useAgentZeroConnection()
 
   const [localBaseUrl, setLocalBaseUrl] = useState(baseUrl)
@@ -159,9 +159,9 @@ const ConnectionCard = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setStatus("testing")
-    const success = await testConnection(localBaseUrl, localApiKey)
+    const success = await testConnection()
     if (success) {
-      setConnectionDetails(localBaseUrl, localApiKey)
+      setConnectionSettings(localBaseUrl, localApiKey)
       setStatus("saved")
     } else {
       setStatus("error")
@@ -251,13 +251,13 @@ const SystemInfoCard = () => {
 }
 
 const LogoutButton = () => {
-  const { signOut } = useAuthContext();
+  const { logOut } = useAuthContext();
 
   return (
     <Button
       variant="outline"
       className="w-full text-destructive hover:text-destructive hover:bg-destructive/10 bg-transparent"
-      onClick={signOut}
+      onClick={logOut}
     >
       <LogOut className="h-4 w-4 mr-2" />
       Sign Out
